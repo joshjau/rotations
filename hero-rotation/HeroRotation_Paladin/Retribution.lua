@@ -136,23 +136,6 @@ local function TemplarStrikesRemains()
   end
   return Remains > 0 and Remains or 0
 end
--- time_to_hpg_expr_t @ https://github.com/simulationcraft/simc/blob/shadowlands/engine/class_modules/paladin/sc_paladin.cpp#L3236
---[[local function ComputeTimeToHPG()
-  local GCDRemains = Player:GCDRemains()
-  local ShortestHPGTime = mathmin(
-    S.CrusaderStrike:CooldownRemains(),
-    S.BladeofJustice:CooldownRemains(),
-    S.Judgment:CooldownRemains(),
-    S.HammerofWrath:IsUsable() and S.HammerofWrath:CooldownRemains() or 10, -- if not usable, return a dummy 10
-    S.WakeofAshes:CooldownRemains()
-  )
-
-  if GCDRemains > ShortestHPGTime then
-    return GCDRemains
-  end
-
-  return ShortestHPGTime
-end]]
 
 --- ===== Rotation Functions =====
 local function Precombat()
