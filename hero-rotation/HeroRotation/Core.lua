@@ -147,29 +147,13 @@ local function DisplayCooldown(Object, DisplayPoolingSwirl, CustomTime)
   HR.MainIconFrame:SetCooldown(StartTime, CastDuration)
 end
 
--- Flash Icon (SpellFlashCore support)
-local LastFlash = 0
-local function FlashIcon(Object)
-  if IsAddOnLoaded("SpellFlashCore") then
-    local SpellID = Object.SpellID
-    local ItemID = Object.ItemID
-    local FlashInterval = 0.5
-    if SpellID and GetTime() - LastFlash > FlashInterval then
-      SpellFlashCore.FlashAction(SpellID)
-      LastFlash = GetTime()
-    elseif ItemID and GetTime() - LastFlash > FlashInterval then
-      SpellFlashCore.FlashItem(ItemID)
-      LastFlash = GetTime()
-    end
-  end
-end
+
 
 -- Main Cast
 HR.CastOffGCDOffset = 1
 function HR.Cast(Object, OffGCD, DisplayStyle, OutofRange, CustomTime)
   local ObjectTexture = HR.GetTexture(Object)
   local Keybind = not HR.GUISettings.General.HideKeyBinds and HL.Action.TextureHotKey(ObjectTexture)
-  FlashIcon(Object)
   if HR.GUISettings.General.ForceMainIcon then
     DisplayStyle = nil
     OffGCD = nil
@@ -230,7 +214,6 @@ local function DisplayQueue(...)
     QueueKeybindTable[i] = not HR.GUISettings.General.HideKeyBinds and HL.Action.TextureHotKey(QueueTextureTable[i])
   end
   -- Call ChangeIcon so that the main icon exists to be able to display a cooldown sweep, even though it gets overlapped
-  FlashIcon(QueueSpellTable[1])
   HR.MainIconFrame:ChangeIcon(QueueTextureTable[1], QueueKeybindTable[1], QueueSpellTable[1]:IsUsable(), false, QueueSpellTable[1]:ID())
   HR.MainIconFrame:SetupParts(QueueTextureTable, QueueKeybindTable)
 end
@@ -270,8 +253,7 @@ function HR.CastLeftCommon(Object, Text)
   local Texture = HR.GetTexture(Object)
   local Text = Text or ""
   local Keybind = not HR.GUISettings.General.HideKeyBinds and HL.Action.TextureHotKey(Texture)
-  local FontScale = (FontSize or 12) * HeroRotationDB.GUISettings["Scaling.ScaleUI"]
-  FlashIcon(Object)
+  local FontScale = 12 * HeroRotationDB.GUISettings["Scaling.ScaleUI"]
   HR.LeftIconFrame:ChangeIcon(Texture, Keybind, Object:ID())
   HR.LeftIconFrame:OverlayText(Text, FontScale)
   HR.CastLeftOffset = HR.CastLeftOffset + 1
@@ -313,7 +295,6 @@ function HR.CastSuggested(Object, OutofRange)
   if HR.CastSuggestedOffset == 1 then
     local Texture = HR.GetTexture(Object)
     local Keybind = not HR.GUISettings.General.HideKeyBinds and HL.Action.TextureHotKey(Texture)
-    FlashIcon(Object)
     HR.SuggestedIconFrame:ChangeIcon(Texture, Keybind, OutofRange, Object:ID())
     HR.CastSuggestedOffset = HR.CastSuggestedOffset + 1
     Object.LastDisplayTime = GetTime()
@@ -327,7 +308,6 @@ function HR.CastRightSuggested(Object, OutofRange)
   if HR.CastRightSuggestedOffset == 1 then
     local Texture = HR.GetTexture(Object)
     local Keybind = not HR.GUISettings.General.HideKeyBinds and HL.Action.TextureHotKey(Texture)
-    FlashIcon(Object)
     HR.RightSuggestedIconFrame:ChangeIcon(Texture, Keybind, OutofRange, Object:ID())
     HR.CastRightSuggestedOffset = HR.CastRightSuggestedOffset + 1
     Object.LastDisplayTime = GetTime()
@@ -369,15 +349,15 @@ function HR.CmdHandler(Message)
     end
   elseif Argument1 == "scale" then
     if Argument2 and Argument3 then
-      Argument3 = tonumber(Argument3)
-      if Argument3 and type(Argument3) == "number" and Argument3 > 0 and Argument3 <= 10 then
+      local ScaleValue = tonumber(Argument3)
+      if ScaleValue and type(ScaleValue) == "number" and ScaleValue > 0 and ScaleValue <= 10 then
         if Argument2 == "ui" then
-          HR.MainFrame:ResizeUI(Argument3)
+          HR.MainFrame:ResizeUI(ScaleValue)
         elseif Argument2 == "buttons" then
-          HR.MainFrame:ResizeButtons(Argument3)
+          HR.MainFrame:ResizeButtons(ScaleValue)
         elseif Argument2 == "all" then
-          HR.MainFrame:ResizeUI(Argument3)
-          HR.MainFrame:ResizeButtons(Argument3)
+          HR.MainFrame:ResizeUI(ScaleValue)
+          HR.MainFrame:ResizeButtons(ScaleValue)
         else
           HR.Print("Invalid |cff88ff88[Type]|r for Scale.")
           HR.Print("Should be |cff8888ff/hr scale|r |cff88ff88[Type]|r |cffff8888[Size]|r.")
