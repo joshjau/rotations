@@ -66,8 +66,8 @@ Cache.Persistent = {
   BookIndex = { Pet = {}, Player = {} }, -- Spell book indices
   SpellLearned = { Pet = {}, Player = {} }, -- Known spells tracking
   Texture = { Spell = {}, Item = {}, Custom = {} }, -- Icon textures
-  ElvUIPaging = { PagingString, PagingStrings = {}, PagingBars = {} }, -- ElvUI integration
-  Talents = { Rank } -- Talent rank data
+  ElvUIPaging = { PagingString = {}, PagingStrings = {}, PagingBars = {} }, -- ElvUI integration
+  Talents = { Rank = {} } -- Talent rank data
 }
 
 --- ======= CACHE MANAGEMENT =======
@@ -223,7 +223,7 @@ end]=],
   local function initGlobal(func)
     return setmetatable({}, {
       __index = function(tbl, key)
-        tbl[key] = loadstring(func(key))() -- Compile and cache function
+        tbl[key] = func(key) -- Return function string
         return tbl[key]
       end
     })
@@ -249,13 +249,13 @@ end]=],
     The system dynamically generates optimized functions for each depth level,
     providing maximum performance for frequently accessed cache paths.
   ]]
-  MakeCache = function(cache)
+  MakeCache = function(cacheTable)
     -- Initialize function maps for different argument counts
     local function init(proto)
       local function makeFunc(n)
-        local func = proto[n]()
-        setfenv(func, { ['cache'] = cache }) -- Bind cache to function scope
-        return func
+        local chunk, err = loadstring(proto[n]); assert(chunk, err)
+        setfenv(chunk, { ['cache'] = cacheTable }) -- Bind cache to function scope
+        return chunk()
       end
 
       local map = {}

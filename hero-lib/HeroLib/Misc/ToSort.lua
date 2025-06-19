@@ -82,20 +82,6 @@ function HL.CombatTime()
   return HL.CombatStarted ~= 0 and GetTime() - HL.CombatStarted or 0
 end
 
--- Get the time since combat has ended.
-function HL.OutOfCombatTime()
-  return HL.CombatEnded ~= 0 and GetTime() - HL.CombatEnded or 0
-end
-
--- Get the Boss Mod Pull Timer.
-function HL.BMPullTime()
-  if not HL.BossModTime or HL.BossModTime == 0 or HL.BossModEndTime - GetTime() < 0 then
-    return 60
-  else
-    return HL.BossModEndTime - GetTime()
-  end
-end
-
 do
   -- Advanced Latency Tracking System
   -- Tracks both home and world latency separately with rolling average smoothing
