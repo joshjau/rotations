@@ -151,19 +151,19 @@ local function Precombat()
   -- variable,name=trinket_priority,op=setif,value=2,value_else=1,condition=!variable.trinket_1_buffs&variable.trinket_2_buffs|variable.trinket_2_buffs&((trinket.2.cooldown.duration%trinket.2.proc.any_dps.duration)*(1.5+trinket.2.has_buff.strength)*(variable.trinket_2_sync))>((trinket.1.cooldown.duration%trinket.1.proc.any_dps.duration)*(1.5+trinket.1.has_buff.strength)*(variable.trinket_1_sync))
   -- Note: Moved to SetTrinketVariables().
   -- Manually added: openers
-  if VerdictSpell:IsReady() and HolyPower >= 4 and Target:IsSpellInRange(VerdictSpell) then
+  if VerdictSpell:IsReady() and HolyPower >= 4 and Target:IsSpellInRange(VerdictSpell) and not VerdictSpell:RecentlyFailed(0.5) then
     if Cast(VerdictSpell, nil, nil, not Target:IsSpellInRange(VerdictSpell)) then return "either verdict precombat 2" end
   end
-  if S.BladeofJustice:IsCastable() then
+  if S.BladeofJustice:IsCastable() and not S.BladeofJustice:RecentlyFailed(0.5) then
     if Cast(S.BladeofJustice, nil, nil, not Target:IsSpellInRange(S.BladeofJustice)) then return "blade_of_justice precombat 4" end
   end
-  if S.Judgment:IsCastable() then
+  if S.Judgment:IsCastable() and not S.Judgment:RecentlyFailed(0.5) then
     if Cast(S.Judgment, nil, nil, not Target:IsSpellInRange(S.Judgment)) then return "judgment precombat 6" end
   end
-  if S.HammerofWrath:IsReady() then
+  if S.HammerofWrath:IsReady() and not S.HammerofWrath:RecentlyFailed(0.5) then
     if Cast(S.HammerofWrath, Settings.CommonsOGCD.GCDasOffGCD.HammerOfWrath, nil, not Target:IsSpellInRange(S.HammerofWrath)) then return "hammer_of_wrath precombat 8" end
   end
-  if S.CrusaderStrike:IsCastable() then
+  if S.CrusaderStrike:IsCastable() and not S.CrusaderStrike:RecentlyFailed(0.5) then
     if Cast(S.CrusaderStrike, nil, nil, not Target:IsSpellInRange(S.CrusaderStrike)) then return "crusader_strike 10" end
   end
 end
