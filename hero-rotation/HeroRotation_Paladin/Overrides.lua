@@ -1,28 +1,36 @@
 --- ============================ HEADER ============================
 -- HeroLib
 local HL      = HeroLib
-local Cache   = HeroCache
 local Unit    = HL.Unit
 local Player  = Unit.Player
-local Pet     = Unit.Pet
-local Target  = Unit.Target
 local Spell   = HL.Spell
-local Item    = HL.Item
--- HeroRotation
-local HR      = HeroRotation
 -- Spells
 local SpellProt = Spell.Paladin.Protection
 local SpellRet  = Spell.Paladin.Retribution
+-- Localize frequently used functions
+local AddCoreOverride = HL.AddCoreOverride
+-- Localize frequently used spells
+local AvengingWrathBuffProt = SpellProt.AvengingWrathBuff
+local SentinelBuff = SpellProt.SentinelBuff
+local Sentinel = SpellProt.Sentinel
+local AvengingWrath = SpellProt.AvengingWrath
+local BastionofLightBuffProt = SpellProt.BastionofLightBuff
+local AvengingWrathBuffRet = SpellRet.AvengingWrathBuff
+local BastionofLightBuffRet = SpellRet.BastionofLightBuff
+local RiteofAdjuration = SpellProt.RiteofAdjuration
+local RiteofAdjurationBuff = SpellProt.RiteofAdjurationBuff
+local RiteofSanctification = SpellProt.RiteofSanctification
+local RiteofSanctificationBuff = SpellProt.RiteofSanctificationBuff
 -- Lua
 
 --- ============================ CONTENT ============================
 -- Protection, ID: 66
 local ProtPalBuffUp
-ProtPalBuffUp = HL.AddCoreOverride("Player.BuffUp",
+ProtPalBuffUp = AddCoreOverride("Player.BuffUp",
   function(self, Spell, AnyCaster, BypassRecovery)
     local BaseCheck = ProtPalBuffUp(self, Spell, AnyCaster, BypassRecovery)
-    if Spell == SpellProt.AvengingWrathBuff and SpellProt.Sentinel:IsAvailable() then
-      return Player:BuffUp(SpellProt.SentinelBuff)
+    if Spell == AvengingWrathBuffProt and Sentinel:IsAvailable() then
+      return Player:BuffUp(SentinelBuff)
     else
       return BaseCheck
     end
@@ -30,11 +38,11 @@ ProtPalBuffUp = HL.AddCoreOverride("Player.BuffUp",
 , 66)
 
 local ProtPalBuffRemains
-ProtPalBuffRemains = HL.AddCoreOverride("Player.BuffRemains",
+ProtPalBuffRemains = AddCoreOverride("Player.BuffRemains",
   function(self, Spell, AnyCaster, BypassRecovery)
     local BaseCheck = ProtPalBuffRemains(self, Spell, AnyCaster, BypassRecovery)
-    if Spell == SpellProt.AvengingWrathBuff and SpellProt.Sentinel:IsAvailable() then
-      return Player:BuffRemains(SpellProt.SentinelBuff)
+    if Spell == AvengingWrathBuffProt and Sentinel:IsAvailable() then
+      return Player:BuffRemains(SentinelBuff)
     else
       return BaseCheck
     end
@@ -42,11 +50,11 @@ ProtPalBuffRemains = HL.AddCoreOverride("Player.BuffRemains",
 , 66)
 
 local ProtPalCDRemains
-ProtPalCDRemains = HL.AddCoreOverride("Spell.CooldownRemains",
+ProtPalCDRemains = AddCoreOverride("Spell.CooldownRemains",
   function(self, BypassRecovery)
     local BaseCheck = ProtPalCDRemains(self, BypassRecovery)
-    if self == SpellProt.AvengingWrath and SpellProt.Sentinel:IsAvailable() then
-      return SpellProt.Sentinel:CooldownRemains()
+    if self == AvengingWrath and Sentinel:IsAvailable() then
+      return Sentinel:CooldownRemains()
     else
       return BaseCheck
     end
@@ -54,11 +62,11 @@ ProtPalCDRemains = HL.AddCoreOverride("Spell.CooldownRemains",
 , 66)
 
 local ProtPalIsAvail
-ProtPalIsAvail = HL.AddCoreOverride("Spell.IsAvailable",
+ProtPalIsAvail = AddCoreOverride("Spell.IsAvailable",
   function(self, CheckPet)
     local BaseCheck = ProtPalIsAvail(self, CheckPet)
-    if self == SpellProt.AvengingWrath and SpellProt.Sentinel:IsAvailable() then
-      return SpellProt.Sentinel:IsAvailable()
+    if self == AvengingWrath and Sentinel:IsAvailable() then
+      return Sentinel:IsAvailable()
     else
       return BaseCheck
     end
@@ -66,26 +74,26 @@ ProtPalIsAvail = HL.AddCoreOverride("Spell.IsAvailable",
 , 66)
 
 local ProtPalIsCastable
-ProtPalIsCastable = HL.AddCoreOverride("Spell.IsCastable",
+ProtPalIsCastable = AddCoreOverride("Spell.IsCastable",
   function (self, BypassRecovery, Range, AoESpell, ThisUnit, Offset)
     local BaseCheck = ProtPalIsCastable(self, BypassRecovery, Range, AoESpell, ThisUnit, Offset)
-    if self == SpellProt.RiteofAdjuration then
-      return BaseCheck and Player:BuffDown(SpellProt.RiteofAdjurationBuff)
-    elseif self == SpellProt.RiteofSanctification then
-      return BaseCheck and Player:BuffDown(SpellProt.RiteofSanctificationBuff)
+    if self == RiteofAdjuration then
+      return BaseCheck and Player:BuffDown(RiteofAdjurationBuff)
+    elseif self == RiteofSanctification then
+      return BaseCheck and Player:BuffDown(RiteofSanctificationBuff)
     else
       return BaseCheck
     end
   end
 , 66)
 
-HL.AddCoreOverride("Player.JudgmentPower",
+AddCoreOverride("Player.JudgmentPower",
   function(self)
     local JP = 1
-    if Player:BuffUp(SpellProt.AvengingWrathBuff) or Player:BuffUp(SpellProt.SentinelBuff) then
+    if Player:BuffUp(AvengingWrathBuffProt) or Player:BuffUp(SentinelBuff) then
       JP = JP + 1
     end
-    if Player:BuffUp(SpellProt.BastionofLightBuff) then
+    if Player:BuffUp(BastionofLightBuffProt) then
       JP = JP + 2
     end
     return JP
@@ -93,13 +101,13 @@ HL.AddCoreOverride("Player.JudgmentPower",
 , 66)
 
 -- Retribution, ID: 70
-HL.AddCoreOverride("Player.JudgmentPower",
+AddCoreOverride("Player.JudgmentPower",
   function(self)
     local JP = 1
-    if Player:BuffUp(SpellRet.AvengingWrathBuff) then
+    if Player:BuffUp(AvengingWrathBuffRet) then
       JP = JP + 1
     end
-    if Player:BuffUp(SpellRet.BastionofLightBuff) then
+    if Player:BuffUp(BastionofLightBuffRet) then
       JP = JP + 2
     end
     return JP
