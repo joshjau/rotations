@@ -1,0 +1,76 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Git Commit Message Format
+
+When generating git commit messages after file changes, use this standardized format:
+
+## Commit Message Structure
+
+```
+type(scope): brief description of changes
+
+- Detailed breakdown of what was changed
+- List specific files modified with their changes
+- Explain the reasoning behind the changes
+- Note any performance improvements or optimizations
+```
+
+## Commit Types
+
+- **feat**: New features or functionality
+- **fix**: Bug fixes and corrections
+- **perf**: Performance improvements and optimizations
+- **refactor**: Code refactoring without changing functionality
+- **style**: Code style changes (formatting, whitespace, etc.)
+- **docs**: Documentation updates
+- **chore**: Maintenance tasks, build changes, or minor updates
+- **test**: Adding or updating tests
+- **ci**: Continuous integration changes
+
+## Examples
+
+### Performance Optimization Example:
+```
+perf(PlayerCombat.lua): remove unused code and micro-optimize loops
+
+- Removed unused locals: `Spell`, `DistanceEnemies`, `GladiatorBadges`, `UsableItemOverride`, and the now-orphaned `Player:GladiatorsBadgeIsEquipped` function
+- Localized global functions: `select`, `type`, and `setmetatable`
+- Replaced direct `HR.Latency()` calls with its local alias `Latency()`
+- Swapped out `table.sort` for the local `tablesort` in `GetUsableItems`
+- Changed `pairs(UnitIDs)` to `ipairs(UnitIDs)` in `TargetAvailableInList` for faster indexed iteration
+```
+
+### Feature Addition Example:
+```
+feat(Paladin/Retribution.lua): add new rotation priority system
+
+- Implemented dynamic priority system for burst phases
+- Added support for covenant abilities in rotation
+- Modified spell priority logic for improved DPS output
+- Updated talent recommendations for current patch
+```
+
+### Bug Fix Example:
+```
+fix(Hunter/BeastMastery.lua): correct pet summoning logic
+
+- Fixed issue where pet abilities weren't being tracked correctly
+- Corrected spell ID references for hunter pet commands
+- Added null checks for pet existence before ability calls
+- Resolved crash when switching between different pet types
+```
+
+## Usage Instructions
+
+When asked to generate a git commit message:
+1. Analyze the changed files to determine the appropriate commit type
+2. Include the main file(s) affected in the scope when relevant
+3. Write a clear, concise title describing what was done
+4. Provide a detailed breakdown in bullet points
+5. Format the message as plain text for easy copy-paste into GitHub Desktop
+
+The output should be ready to copy and paste directly into the GitHub Desktop commit message field.
+
