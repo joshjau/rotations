@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# World of Warcraft API Rules Index
+
+This directory contains Cursor rules for World of Warcraft API functions, specifically tailored for addon development in the Hero Rotation ecosystem.
+
+## Available API Rules
+
+### Network & Performance APIs
+- [GetNetStats](mdc:.cursor/rules/wow-api-rules/GetNetStats.mdc) - Network bandwidth and latency information
+- [GetTime](mdc:.cursor/rules/wow-api-rules/GetTime.mdc) - System uptime and timing operations
+
+### UI & Frame APIs
+- [CreateFrame](mdc:.cursor/rules/wow-api-rules/CreateFrame.mdc) - Create UI frame objects and interface elements
+
+### Instance & Environment APIs
+- [GetInstanceInfo](mdc:.cursor/rules/wow-api-rules/GetInstanceInfo.mdc) - Instance detection and environment information
+
+## Project Context
+This workspace contains the Hero Rotation addon suite for World of Warcraft, including:
+- **Hero Lib** ([hero-lib/](mdc:hero-lib)) - Core library functionality
+- **Hero Rotation** ([hero-rotation/](mdc:hero-rotation)) - Main rotation addon with class-specific modules
+- **Hero DBC** ([hero-dbc/](mdc:hero-dbc)) - Database and spell data management
+- **Hero Cache** ([hero-lib/HeroCache/](mdc:hero-lib/HeroCache)) - Caching system
+
+## Rule Usage Guidelines
+
+### When to Reference These Rules
+- When implementing network-aware functionality
+- When optimizing performance based on connection quality  
+- When developing latency compensation features
+- When troubleshooting connection-related issues
+- When creating custom UI elements and interface panels
+- When building rotation displays, settings panels, or status indicators
+- When implementing event-driven UI updates and frame management
+- When developing timing-sensitive rotation logic and cooldown tracking
+- When implementing performance monitoring and profiling systems
+- When creating animations, debouncing, or scheduled task systems
+- When adapting rotations based on instance type, difficulty, or group size
+- When implementing content-aware behavior for dungeons, raids, or PvP
+- When detecting Mythic+ scaling or special encounter mechanics
+
+### Code Integration
+These API rules provide:
+- **Function signatures** with parameter and return value details
+- **Practical examples** relevant to rotation addon development
+- **Performance considerations** for high-frequency operations
+- **Version compatibility** information across WoW expansions
+
+## Contributing New Rules
+When adding new WoW API rules:
+1. Create a new `.mdc` file in this directory
+2. Follow the established format with function overview, syntax, examples, and notes
+3. Update this index file to reference the new rule
+4. Include practical examples relevant to the Hero Rotation addon context
+
+
+
+
+
+
+
+
+

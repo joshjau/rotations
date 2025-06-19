@@ -1,0 +1,109 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# WoW API: GetNetStats
+
+## Function Overview
+`GetNetStats()` returns bandwidth and latency network information for World of Warcraft connections.
+
+## Syntax
+```lua
+bandwidthIn, bandwidthOut, latencyHome, latencyWorld = GetNetStats()
+```
+
+## Returns
+- **bandwidthIn** (number): Current incoming bandwidth (download) usage, measured in KB/s
+- **bandwidthOut** (number): Current outgoing bandwidth (upload) usage, measured in KB/s  
+- **latencyHome** (number): Average roundtrip latency to the home realm server in milliseconds (updated every 30 seconds)
+- **latencyWorld** (number): Average roundtrip latency to the current world server in milliseconds (updated every 30 seconds)
+
+## Connection Types Explained
+
+### Home Connection (latencyHome)
+- **Purpose**: Connection to your realm server
+- **Data transmitted**: 
+  - Chat data
+  - Auction house information
+  - Guild chat and information
+  - Some addon data
+  - Various other realm-specific data
+- **Characteristics**: Slim connection with low bandwidth requirements
+
+### World Connection (latencyWorld)
+- **Purpose**: Connection to world servers
+- **Data transmitted**:
+  - Combat data
+  - Player data (specs, gear, enchants)
+  - NPC and mob information
+  - Casting and spell data
+  - Profession data
+  - Environmental data
+- **Characteristics**: Much larger data volume, affected by population density
+
+## Usage Examples
+
+### Basic Network Monitoring
+```lua
+local function CheckNetworkStatus()
+    local bandwidthIn, bandwidthOut, latencyHome, latencyWorld = GetNetStats()
+    
+    print("Download: " .. bandwidthIn .. " KB/s")
+    print("Upload: " .. bandwidthOut .. " KB/s")
+    print("Home Latency: " .. latencyHome .. " ms")
+    print("World Latency: " .. latencyWorld .. " ms")
+end
+```
+
+### Performance-Based Rotation Adjustments
+```lua
+local function ShouldAdjustForLatency()
+    local _, _, _, latencyWorld = GetNetStats()
+    
+    -- Adjust rotation timing for high latency
+    if latencyWorld > 200 then
+        return true, "High latency detected"
+    end
+    
+    return false, "Normal latency"
+end
+```
+
+### Bandwidth Monitoring for Addon Data
+```lua
+local function MonitorBandwidthUsage()
+    local bandwidthIn, bandwidthOut = GetNetStats()
+    
+    -- Throttle addon communications during high bandwidth usage
+    if bandwidthOut > 50 then -- KB/s threshold
+        return false -- Don't send addon data
+    end
+    
+    return true -- Safe to send addon data
+end
+```
+
+## Important Notes
+- Latency values are only updated every 30 seconds
+- World latency can be significantly higher in populated areas (cities, raid zones)
+- Large data queues on the server can cause world latency spikes
+- Home and world connections operate independently
+- Prior to patch 4.0.6, only world latency was available
+
+## Common Use Cases in Hero Rotation
+- **Lag Compensation**: Adjust spell queueing and timing based on world latency
+- **Performance Optimization**: Reduce addon overhead during high bandwidth usage
+- **Connection Diagnostics**: Help users identify network-related performance issues
+- **Rotation Timing**: Modify GCD timing and spell casting predictions for high-latency situations
+
+## API Availability
+- **Added**: Patch 1.0.0 (Classic) / Patch 1.13.2 (Classic re-release)
+- **Enhanced**: Patch 4.0.6 (Added separate home/world latency)
+- **Current**: Available in all WoW flavors (Retail, Classic, Hardcore, Cataclysm Classic)
+
+## Related APIs
+- `GetFramerate()` - For FPS monitoring
+- `GetCVar("networkQuality")` - Network quality setting
+- `C_Timer` functions - For timing-sensitive operations that may need latency compensation
+

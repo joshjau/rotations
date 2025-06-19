@@ -1,0 +1,335 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# WoW API: GetInstanceInfo
+
+## Function Overview
+`GetInstanceInfo()` returns detailed information about the map instance the character is currently in, enabling addons to adapt behavior based on content type, difficulty, and group composition.
+
+## Syntax
+```lua
+name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceID, instanceGroupSize, LfgDungeonID = GetInstanceInfo()
+```
+
+## Returns
+- **name** (string): Localized name of the instance, or continent name if not in an instance
+- **instanceType** (string): Instance category - "none", "scenario", "party", "raid", "arena", "pvp"
+- **difficultyID** (number): DifficultyID of the instance (0 if not in instance)
+- **difficultyName** (string): Localized difficulty name ("10 Player", "25 Player (Heroic)", etc.)
+- **maxPlayers** (number): Maximum players permitted in the instance
+- **dynamicDifficulty** (number): Dynamic difficulty (deprecated, always returns 0)
+- **isDynamic** (boolean): Whether instance difficulty can be changed while zoned in
+- **instanceID** (number): InstanceID for the instance or continent
+- **instanceGroupSize** (number): Number of players in your instance group
+- **LfgDungeonID** (number): LfgDungeonID if in dungeon finder group, nil otherwise
+
+## Instance Types
+
+### Content Categories
+- **"none"**: Not in an instance (open world)
+- **"party"**: Dungeons (5-player content)
+- **"raid"**: Raids (10+ player content)
+- **"scenario"**: Scenarios (story-based encounters)
+- **"arena"**: Arena PvP matches
+- **"pvp"**: Battlegrounds
+
+## Usage Examples
+
+### Basic Instance Detection
+```lua
+local function GetCurrentInstanceInfo()
+    local name, instanceType, difficultyID, difficultyName, maxPlayers = GetInstanceInfo()
+    
+    print("Instance:", name)
+    print("Type:", instanceType)
+    print("Difficulty:", difficultyName)
+    print("Max Players:", maxPlayers)
+    
+    return instanceType, difficultyID
+end
+```
+
+### Rotation Behavior Based on Content Type
+```lua
+local function GetRotationMode()
+    local name, instanceType, difficultyID, difficultyName, maxPlayers, _, _, _, instanceGroupSize = GetInstanceInfo()
+    
+    if instanceType == "none" then
+        return "questing", "Open world content"
+    elseif instanceType == "party" then
+        return "dungeon", "5-player dungeon"
+    elseif instanceType == "raid" then
+        if maxPlayers <= 10 then
+            return "raid_small", "10-player raid"
+        else
+            return "raid_large", "25+ player raid"
+        end
+    elseif instanceType == "pvp" or instanceType == "arena" then
+        return "pvp", "PvP content"
+    elseif instanceType == "scenario" then
+        return "scenario", "Scenario content"
+    end
+    
+    return "unknown", "Unknown content type"
+end
+
+-- Usage in rotation logic
+local function ShouldUseCleaveRotation()
+    local mode, description = GetRotationMode()
+    
+    -- Use cleave abilities in dungeons and small raids
+    if mode == "dungeon" or mode == "raid_small" then
+        return true
+    end
+    
+    return false
+end
+```
+
+### Difficulty-Based Optimization
+```lua
+local function GetDifficultySettings()
+    local _, instanceType, difficultyID, difficultyName = GetInstanceInfo()
+    
+    local settings = {
+        useCooldowns = false,
+        prioritySurvival = false,
+        useConsumables = false
+    }
+    
+    if instanceType == "raid" then
+        -- Heroic and Mythic difficulties
+        if difficultyID == 15 or difficultyID == 16 then -- Heroic/Mythic raid
+            settings.useCooldowns = true
+            settings.prioritySurvival = true
+            settings.useConsumables = true
+        end
+    elseif instanceType == "party" then
+        -- Mythic+ dungeons
+        if difficultyID == 23 then -- Mythic+
+            settings.useCooldowns = true
+            settings.prioritySurvival = true
+        end
+    end
+    
+    return settings
+end
+```
+
+### Group Size Awareness
+```lua
+local function AdjustForGroupSize()
+    local _, instanceType, difficultyID, _, maxPlayers, _, _, _, instanceGroupSize = GetInstanceInfo()
+    
+    if instanceType == "none" then
+        return "solo" -- Open world
+    end
+    
+    -- Determine if we're in a full group
+    local expectedSize = instanceType == "party" and 5 or maxPlayers
+    local isFullGroup = instanceGroupSize >= expectedSize
+    
+    if isFullGroup then
+        return "full_group"
+    else
+        return "partial_group"
+    end
+end
+
+-- Use in buff/debuff management
+local function ShouldApplyGroupBuffs()
+    local groupStatus = AdjustForGroupSize()
+    
+    -- Only apply expensive group buffs in full groups
+    return groupStatus == "full_group"
+end
+```
+
+### Instance-Specific Behavior
+```lua
+-- Table of special instance handling
+local specialInstances = {
+    [631] = "Icecrown Citadel", -- Special mechanics for ICC
+    [649] = "Trial of the Crusader", -- Tournament mechanics
+    [724] = "The Ruby Sanctum", -- Dragon fight mechanics
+}
+
+local function GetSpecialInstanceBehavior()
+    local name, instanceType, difficultyID, _, _, _, _, instanceID = GetInstanceInfo()
+    
+    if specialInstances[instanceID] then
+        return {
+            name = specialInstances[instanceID],
+            requiresSpecialHandling = true,
+            customRotation = true
+        }
+    end
+    
+    return {
+        name = name,
+        requiresSpecialHandling = false,
+        customRotation = false
+    }
+end
+```
+
+### Mythic+ Detection and Scaling
+```lua
+local function GetMythicPlusInfo()
+    local _, instanceType, difficultyID, difficultyName, _, _, _, _, _, LfgDungeonID = GetInstanceInfo()
+    
+    if instanceType == "party" and difficultyID == 23 then -- Mythic+
+        -- Extract keystone level from difficulty name if possible
+        local keystoneLevel = difficultyName:match("(%d+)")
+        
+        return {
+            isMythicPlus = true,
+            keystoneLevel = tonumber(keystoneLevel) or 0,
+            dungeonID = LfgDungeonID,
+            scalingFactor = math.max(1, (tonumber(keystoneLevel) or 0) / 10)
+        }
+    end
+    
+    return {
+        isMythicPlus = false,
+        keystoneLevel = 0,
+        scalingFactor = 1.0
+    }
+end
+
+-- Adjust rotation for M+ scaling
+local function GetMythicPlusRotationPriority()
+    local mythicInfo = GetMythicPlusInfo()
+    
+    if mythicInfo.isMythicPlus then
+        if mythicInfo.keystoneLevel >= 15 then
+            return "survival" -- High keys: prioritize staying alive
+        elseif mythicInfo.keystoneLevel >= 10 then
+            return "balanced" -- Medium keys: balance damage and survival
+        else
+            return "damage" -- Low keys: focus on damage
+        end
+    end
+    
+    return "standard"
+end
+```
+
+### Dynamic Difficulty Management
+```lua
+local function MonitorDifficultyChanges()
+    local lastDifficultyID = 0
+    
+    local function CheckDifficultyChange()
+        local _, instanceType, difficultyID, difficultyName, _, _, isDynamic = GetInstanceInfo()
+        
+        if difficultyID ~= lastDifficultyID then
+            print("Difficulty changed:", difficultyName)
+            
+            if isDynamic then
+                print("Instance supports dynamic difficulty changes")
+            end
+            
+            -- Trigger rotation recalculation
+            lastDifficultyID = difficultyID
+            return true -- Difficulty changed
+        end
+        
+        return false -- No change
+    end
+    
+    return CheckDifficultyChange
+end
+```
+
+### PvP vs PvE Detection
+```lua
+local function IsPvPContent()
+    local _, instanceType = GetInstanceInfo()
+    return instanceType == "pvp" or instanceType == "arena"
+end
+
+local function GetRotationContext()
+    if IsPvPContent() then
+        return {
+            context = "pvp",
+            prioritizeBurst = true,
+            useDefensives = true,
+            targetPlayers = true
+        }
+    else
+        return {
+            context = "pve",
+            prioritizeSustained = true,
+            useDefensives = false,
+            targetPlayers = false
+        }
+    end
+end
+```
+
+## Important Considerations
+
+### Return Value Reliability
+- **Instance type "none"**: Many return values will be nil or meaningless
+- **Dynamic updates**: Values update when entering/leaving instances
+- **Difficulty changes**: DifficultyID updates for dynamic instances
+- **Group size tracking**: InstanceGroupSize reflects current group composition
+
+### Performance Notes
+- **Lightweight function**: Safe to call frequently
+- **Event-driven updates**: Consider monitoring ZONE_CHANGED_NEW_AREA event
+- **Caching recommendations**: Cache results if called multiple times per frame
+
+## Common Use Cases in Hero Rotation
+
+### Content-Aware Rotations
+- **Dungeon vs Raid**: Different ability priorities based on encounter length
+- **AoE vs Single Target**: Group size and enemy density considerations
+- **Survival vs DPS**: Difficulty-based priority adjustments
+
+### Performance Optimization
+- **Cooldown management**: Save major cooldowns for appropriate content
+- **Resource conservation**: Adjust mana/energy usage based on encounter length
+- **Buff optimization**: Apply appropriate buffs for group size
+
+### User Experience
+- **Automatic configuration**: Adjust addon behavior without user intervention
+- **Context awareness**: Provide relevant information for current content
+- **Smart recommendations**: Suggest rotations appropriate for content type
+
+## API Availability
+- **Added**: Patch 3.1.0 (Retail) / Patch 1.13.2 (Classic)
+- **Enhanced**: Multiple patches added return values (instanceGroupSize, LfgDungeonID)
+- **Current**: Available in all WoW flavors with varying return value support
+
+## Related APIs
+- `C_Map.GetBestMapForUnit()` - Get map information for units
+- `IsInInstance()` - Simple boolean instance check
+- `GetDifficultyInfo()` - Additional difficulty information
+- `C_ChallengeMode.GetActiveKeystoneInfo()` - Mythic+ specific information
+- `GetNumGroupMembers()` - Current group size information
+- `UnitInRaid()` / `UnitInParty()` - Group membership checks
+
+## Event Integration
+```lua
+-- Monitor instance changes
+local instanceFrame = CreateFrame("Frame")
+instanceFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+instanceFrame:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
+instanceFrame:SetScript("OnEvent", function(self, event)
+    local name, instanceType, difficultyID = GetInstanceInfo()
+    print("Instance changed:", name, instanceType, difficultyID)
+    
+    -- Update rotation configuration
+    UpdateRotationForInstance()
+end)
+```
+
+## See Also
+- [Instance Difficulty IDs](mdc:https:/warcraft.wiki.gg/wiki/DifficultyID) for complete difficulty reference
+- [Zone and Instance Information](mdc:https:/warcraft.wiki.gg/wiki/InstanceMapID) for mapping data
+- [C_Map API](mdc:https:/warcraft.wiki.gg/wiki/C_Map) for additional location functions
+

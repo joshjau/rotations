@@ -1,0 +1,206 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# WoW API: CreateFrame
+
+## Function Overview
+`CreateFrame()` creates a Frame object, which is the foundation for all UI elements in World of Warcraft addons.
+
+## Syntax
+```lua
+frame = CreateFrame(frameType [, name, parent, template, id])
+```
+
+## Arguments
+- **frameType** (string): Type of the frame (e.g., "Frame", "Button", "EditBox")
+- **name** (string?, optional): Globally accessible name for the frame, or `nil` for anonymous
+- **parent** (Frame?, optional): Parent object to assign, or `nil` for parentless
+- **template** (string?, optional): Comma-delimited list of virtual XML templates to inherit
+- **id** (number?, optional): ID to assign to the frame
+
+## Returns
+- **frame** (Frame): The created Frame object or specific frame type object
+
+## Common Frame Types
+
+### Basic UI Elements
+- **Frame**: Basic container frame
+- **Button**: Clickable button element
+- **CheckButton**: Checkbox with on/off state
+- **EditBox**: Text input field
+- **Slider**: Value selection slider
+- **StatusBar**: Progress/health bar
+
+### Advanced Frame Types
+- **ScrollFrame**: Scrollable content container
+- **GameTooltip**: Tooltip display frame
+- **MessageFrame**: Chat message display
+- **PlayerModel**: 3D character model display
+- **Cooldown**: Spell/ability cooldown timer
+
+## Usage Examples
+
+### Basic Frame Creation
+```lua
+-- Create a simple frame
+local frame = CreateFrame("Frame", "MyAddonFrame", UIParent)
+frame:SetSize(200, 100)
+frame:SetPoint("CENTER")
+
+-- Add a background texture
+frame.bg = frame:CreateTexture(nil, "BACKGROUND")
+frame.bg:SetAllPoints()
+frame.bg:SetColorTexture(0, 0, 0, 0.8)
+```
+
+### Button with Template
+```lua
+-- Create a button using Blizzard's template
+local button = CreateFrame("Button", "MyButton", UIParent, "UIPanelButtonTemplate")
+button:SetSize(100, 40)
+button:SetPoint("CENTER")
+button:SetText("Click Me")
+button:SetScript("OnClick", function(self)
+    print("Button clicked!")
+end)
+```
+
+### Hero Rotation UI Panel
+```lua
+-- Create a rotation display panel
+local rotationFrame = CreateFrame("Frame", "HeroRotationPanel", UIParent)
+rotationFrame:SetSize(300, 150)
+rotationFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 100)
+
+-- Add background
+rotationFrame.bg = rotationFrame:CreateTexture(nil, "BACKGROUND")
+rotationFrame.bg:SetAllPoints()
+rotationFrame.bg:SetColorTexture(0.1, 0.1, 0.1, 0.9)
+
+-- Add title text
+rotationFrame.title = rotationFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+rotationFrame.title:SetPoint("TOP", 0, -10)
+rotationFrame.title:SetText("Hero Rotation")
+```
+
+### Event Handling Frame
+```lua
+-- Create frame for event monitoring
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED") -- Enter combat
+eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")  -- Leave combat
+eventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+
+eventFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_REGEN_DISABLED" then
+        -- Handle combat start
+        print("Entering combat - rotation active")
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        -- Handle combat end
+        print("Leaving combat - rotation paused")
+    end
+end)
+```
+
+### Cooldown Display
+```lua
+-- Create cooldown frame for spell tracking
+local cooldownFrame = CreateFrame("Cooldown", "SpellCooldownFrame", UIParent)
+cooldownFrame:SetSize(64, 64)
+cooldownFrame:SetPoint("CENTER")
+
+-- Start cooldown animation
+local function StartCooldown(duration)
+    cooldownFrame:SetCooldown(GetTime(), duration)
+end
+
+-- Usage: StartCooldown(30) -- for 30-second cooldown
+```
+
+### Settings Panel with EditBox
+```lua
+-- Create settings input frame
+local settingsFrame = CreateFrame("Frame", "HeroRotationSettings", UIParent)
+settingsFrame:SetSize(400, 300)
+settingsFrame:SetPoint("CENTER")
+
+-- Add edit box for configuration
+local editBox = CreateFrame("EditBox", nil, settingsFrame, "InputBoxTemplate")
+editBox:SetSize(200, 30)
+editBox:SetPoint("TOP", settingsFrame, "TOP", 0, -50)
+editBox:SetAutoFocus(false)
+editBox:SetScript("OnEnterPressed", function(self)
+    local value = self:GetText()
+    print("Setting updated:", value)
+    self:ClearFocus()
+end)
+```
+
+## Important Considerations
+
+### Frame Lifecycle
+- **Frames cannot be deleted**: Once created, frames persist until addon unload
+- **Reuse frames**: Create frame pools for temporary UI elements
+- **Memory management**: Hide unused frames instead of creating new ones
+
+### Performance Tips
+- **Use templates**: Leverage Blizzard's XML templates for consistent styling
+- **Parent properly**: Set appropriate parent relationships for UI scaling
+- **Event optimization**: Only register for events you actually need
+
+### Common Patterns in Hero Rotation
+- **Rotation displays**: Show recommended next ability
+- **Cooldown tracking**: Monitor spell and ability cooldowns  
+- **Settings panels**: Configuration interfaces for rotation customization
+- **Status indicators**: Combat state, target information, buffs/debuffs
+
+## Template Integration
+```lua
+-- Using Blizzard templates for consistent UI
+local dropdown = CreateFrame("Frame", "MyDropdown", parent, "UIDropDownMenuTemplate")
+local scrollFrame = CreateFrame("ScrollFrame", "MyScroll", parent, "UIPanelScrollFrameTemplate")
+local tooltip = CreateFrame("GameTooltip", "MyTooltip", parent, "GameTooltipTemplate")
+```
+
+## Advanced Frame Management
+```lua
+-- Frame pool for reusable UI elements
+local framePool = {}
+local function GetPooledFrame()
+    local frame = table.remove(framePool)
+    if not frame then
+        frame = CreateFrame("Frame", nil, UIParent)
+        -- Initialize frame properties
+        frame:SetSize(50, 50)
+    end
+    frame:Show()
+    return frame
+end
+
+local function ReleaseFrame(frame)
+    frame:Hide()
+    frame:ClearAllPoints()
+    table.insert(framePool, frame)
+end
+```
+
+## API Availability
+- **Added**: Patch 1.10.0 (Classic)
+- **Enhanced**: Patch 1.11.0 (Added template inheritance)
+- **Enhanced**: Patch 2.0.1 (Comma-separated template support)
+- **Current**: Available in all WoW flavors
+
+## Related APIs
+- `CreateFramePool()` - For managing reusable frame collections
+- `Frame:SetParent()` - Change frame parent after creation
+- `Frame:SetID()` - Assign ID after creation
+- `Frame:CreateTexture()` - Add texture elements to frames
+- `Frame:CreateFontString()` - Add text elements to frames
+
+## See Also
+- [UI Object Types](mdc:https:/warcraft.wiki.gg/wiki/Widget_API) for complete frame type documentation
+- [FrameXML Templates](mdc:https:/www.townlong-yak.com/framexml) for available template references
+- [Widget Script Handlers](mdc:https:/warcraft.wiki.gg/wiki/Widget_script_handlers) for event handling
+
