@@ -1,22 +1,10 @@
 --- ============================ HEADER ============================
 --- ======= LOCALIZE =======
--- Addon
-local addonName, addonTable = ...
--- HeroDBC
-local DBC = HeroDBC.DBC
 -- HeroLib
-local HL         = HeroLib
-local Cache      = HeroCache
-local Unit       = HL.Unit
-local Player     = Unit.Player
-local Target     = Unit.Target
-local Pet        = Unit.Pet
-local Spell      = HL.Spell
-local MultiSpell = HL.MultiSpell
-local Item       = HL.Item
-local MergeTableByKey = HL.Utils.MergeTableByKey
--- HeroRotation
-local HR         = HeroRotation
+local Spell      = HeroLib.Spell
+local MultiSpell = HeroLib.MultiSpell
+local Item       = HeroLib.Item
+local MergeTableByKey = HeroLib.Utils.MergeTableByKey
 
 --- ============================ CONTENT ============================
 -- Spells
