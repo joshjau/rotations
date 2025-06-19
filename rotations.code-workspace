@@ -4,5 +4,36 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"Lua.runtime.version": "Lua 5.1",
+		"Lua.runtime.builtin": {
+			"basic": "disable",
+			"debug": "disable",
+			"io": "disable",
+			"math": "disable",
+			"os": "disable",
+			"package": "disable",
+			"string": "disable",
+			"table": "disable",
+			"utf8": "disable"
+		},
+		"Lua.workspace.library": [
+			"c:\\Users\\joshu\\.cursor\\extensions\\ketho.wow-api-0.20.8\\Annotations\\Core"
+		],
+		"Lua.diagnostics.globals": [
+			"SlashCmdList",
+			"CR_VERSATILITY_DAMAGE_DONE",
+			"NUM_ACTIONBAR_BUTTONS",
+			"NUM_ACTIONBAR_PAGES",
+			"SPELL_FAILED_UNIT_NOT_INFRONT",
+			"UIDropDownMenu_Initialize",
+			"UIDropDownMenu_SetSelectedValue",
+			"UIDropDownMenu_JustifyText",
+			"Settings",
+			"UIDropDownMenu_AddButton",
+			"UIDropDownMenu_SetSelectedID",
+			"UIDropDownMenu_CreateInfo",
+			"UIDropDownMenu_GetText"
+		]
+	}
 }
