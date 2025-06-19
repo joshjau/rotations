@@ -1,0 +1,40 @@
+{
+  "dbfiles": [
+    "GarrTalent",
+    "GarrTalentRank",
+    "ItemEffect",
+    "ItemXItemEffect",
+    "ItemSparse",
+    "JournalEncounterItem",
+    "SpecSetMember",
+    "Spell",
+    "SpellAuraOptions",
+    "SpellCooldowns",
+    "SpellDuration",
+    "SpellEffect",
+    "SpellItemEnchantment",
+    "SpellMisc",
+    "SpellName",
+    "SpellProcsPerMinute",
+    "SpellProcsPerMinuteMod",
+    "SpellRange",
+    "Talent"
+  ],
+  "parsers": [
+    "ItemData",
+    "ItemRange",
+    "ItemSpell",
+    "SpellAuraStat",
+    "SpellDuration",
+    "SpellEnchant",
+    "SpellGCD",
+    "SpellMeleeRange",
+    "SpellProjectileSpeed",
+    "SpellRPPM",
+    "SpellTickTime",
+    "Talent"
+  ],
+  "filters": [
+    "ItemRange"
+  ]
+}
