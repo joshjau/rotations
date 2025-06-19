@@ -1,21 +1,20 @@
 --- ============================ HEADER ============================
 --- ======= LOCALIZE =======
--- Addon
-local addonName, addonTable = ...
 -- HeroLib
 local HL = HeroLib
-local HR = HeroRotation
 local Cache = HeroCache
-local Unit = HL.Unit
-local Player = Unit.Player
-local Target = Unit.Target
-local Spell = HL.Spell
-local Item = HL.Item
+-- HeroRotation
+local HR = HeroRotation
 -- Lua
 local select = select
 -- File Locals
-HR.Commons.Paladin = {}
+HR.Commons = HR.Commons or {}
+HR.Commons.Paladin = HR.Commons.Paladin or {}
 local Paladin = HR.Commons.Paladin
+-- Spell IDs
+local HolyCrusaderStrikeSpellID = 385127
+local DivineHammerSpellID = 198034
+-- Initialize
 Paladin.HPGCount = 0
 Paladin.DivineHammerActive = false
 
@@ -34,9 +33,9 @@ HL:RegisterForSelfCombatEvent(
 HL:RegisterForSelfCombatEvent(
   function (...)
     local SpellID = select(12, ...)
-    if SpellID == 385127 then
+    if SpellID == HolyCrusaderStrikeSpellID then
       Paladin.HPGCount = 0
-    elseif SpellID == 198034 then -- Divine Hammer
+    elseif SpellID == DivineHammerSpellID then -- Divine Hammer
       Paladin.DivineHammerActive = true
     end
   end
@@ -45,7 +44,7 @@ HL:RegisterForSelfCombatEvent(
 HL:RegisterForSelfCombatEvent(
   function (...)
     local SpellID = select(12, ...)
-    if SpellID == 198034 then -- Divine Hammer
+    if SpellID == DivineHammerSpellID then -- Divine Hammer
       Paladin.DivineHammerActive = false
     end
   end
