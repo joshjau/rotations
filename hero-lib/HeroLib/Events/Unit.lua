@@ -1,15 +1,10 @@
 --- ============================ HEADER ============================
 --- ======= LOCALIZE =======
 -- Addon
-local addonName, HL = ...
+local _, HL = ...
 -- HeroLib
-local Cache         = HeroCache
 local Unit          = HL.Unit
-local Player        = Unit.Player
-local Pet           = Unit.Pet
 local Target        = Unit.Target
-local Spell         = HL.Spell
-local Item          = HL.Item
 
 -- Lua locals
 local pairs         = pairs
@@ -18,7 +13,7 @@ local pairs         = pairs
 
 
 --- ============================ CONTENT ============================
--- Nameplate Updated
+-- Manages nameplate units for multi-target detection and cleave optimization.
 do
   local NameplateUnits = Unit.Nameplate
 
@@ -26,17 +21,17 @@ do
   HL:RegisterForEvent(function(Event, UnitID) NameplateUnits[UnitID]:Init() end, "NAME_PLATE_UNIT_REMOVED")
 end
 
--- Player Target Updated
+-- Updates the primary target, crucial for single-target spell casting.
 HL:RegisterForEvent(function() Target:Cache() end, "PLAYER_TARGET_CHANGED", "PLAYER_SOFT_ENEMY_CHANGED")
 
--- Player Focus Target Updated
+-- Updates the focus target for secondary target tracking and control.
 do
   local Focus = Unit.Focus
 
   HL:RegisterForEvent(function() Focus:Cache() end, "PLAYER_FOCUS_CHANGED")
 end
 
--- Arena Unit Updated
+-- Keeps arena opponent data fresh for accurate PvP burst windows.
 do
   local ArenaUnits = Unit.Arena
 
@@ -49,7 +44,7 @@ do
   )
 end
 
--- Boss Unit Updated
+-- Updates boss units, vital for raid mechanics and phase transitions.
 do
   local BossUnits = Unit.Boss
 
@@ -61,7 +56,7 @@ do
   )
 end
 
--- Party/Raid Unit Updated
+-- Updates friendly party and raid frames for group-based logic.
 HL:RegisterForEvent(
   function()
     for _, PartyUnit in pairs(Unit.Party) do PartyUnit:Cache() end
@@ -69,11 +64,50 @@ HL:RegisterForEvent(
   end,
   "GROUP_ROSTER_UPDATE"
 )
--- TODO: Need to maybe also update friendly units with:
--- PARTY_MEMBER_ENABLE
--- PARTY_MEMBER_DISABLE
 
--- General Unit Target Updated
+-- Updates unit health, essential for execute abilities and health-based logic.
+HL:RegisterForEvent(
+  function(Event, UnitID)
+    if UnitID == Target:ID() then
+      Target:Cache()
+    else
+      local FoundUnit = Unit.Nameplate[UnitID] or Unit.Boss[UnitID]
+      if FoundUnit then FoundUnit:Cache() end
+    end
+  end,
+  "UNIT_HEALTH"
+)
+
+-- Updates unit power (mana, rage, etc.), informing resource-sensitive abilities.
+HL:RegisterForEvent(
+  function(Event, UnitID, PowerType)
+    if UnitID == Target:ID() then
+      Target:Cache()
+    else
+      local FoundUnit = Unit.Nameplate[UnitID] or Unit.Boss[UnitID] or Unit.Arena[UnitID]
+      if FoundUnit then FoundUnit:Cache() end
+    end
+  end,
+  "UNIT_POWER_UPDATE"
+)
+
+-- Updates unit auras, critical for tracking buffs/debuffs for rotation decisions.
+HL:RegisterForEvent(
+  function(Event, UnitID, UpdateInfo)
+    -- Optimize by only processing events with meaningful aura changes.
+    if UpdateInfo and (UpdateInfo.addedAuras or UpdateInfo.updatedAuraInstanceIDs or UpdateInfo.removedAuraInstanceIDs) then
+      if UnitID == Target:ID() then
+        Target:Cache()
+      else
+        local FoundUnit = Unit.Nameplate[UnitID] or Unit.Boss[UnitID] or Unit.Arena[UnitID]
+        if FoundUnit then FoundUnit:Cache() end
+      end
+    end
+  end,
+  "UNIT_AURA"
+)
+
+-- Handles changes in unit state like faction, flags, and targetability.
 do
   local Focus = Unit.Focus
   local BossUnits, PartyUnits, RaidUnits, NameplateUnits = Unit.Boss, Unit.Party, Unit.Raid, Unit.Nameplate
